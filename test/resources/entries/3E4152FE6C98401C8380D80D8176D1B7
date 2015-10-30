@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>UUID</key>
+	<string>3E4152FE6C98401C8380D80D8176D1B7</string>
+	<key>Creation Date</key>
+	<date>2014-10-25T01:24:29Z</date>
+	<key>Creator</key>
+	<dict>
+		<key>Device Agent</key>
+		<string>Narrate</string>
+		<key>Generation Date</key>
+		<date>2014-10-25T01:24:29Z</date>
+		<key>Host Name</key>
+		<string>Narrate</string>
+		<key>OS Agent</key>
+		<string>Android</string>
+		<key>Software Agent</key>
+		<string>Narrate</string>
+	</dict>
+	<key>Entry Text</key>
+	<string>Probando 1,2,3...
+
+¡Hola, mundo!</string>
+	<key>Starred</key>
+	<false/>
+	<key>Time Zone</key>
+	<string>Argentina Time</string>
+	<key>Tags</key>
+	<array>
+		<string>JoB #98</string>
+		<string>@for:32</string>
+	</array>
+</dict>
+</plist>

@@ -1,0 +1,6 @@
+__pycache__
+/dist
+/python
+/resources/notes/*.jpg
+/resources/notes/notes.db
+/sqink.ini

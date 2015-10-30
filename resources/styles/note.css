@@ -1,0 +1,10 @@
+body.note {background-image:url('../images/note-background-600x600.jpg'); font-family:verdana,arial,sans-serif; font-size:10pt;}
+h2.note-info {margin:0;}
+div.note-info {margin:0.3em 0; font-size:75%;}
+div.note-info img {vertical-align:bottom;}
+div.note-info span {border-radius:0.5em; -webkit-border-radius:0.5em; padding:0 0.5em;}
+div.note-dates span {background-color:#dce775;}
+div.note-tags span {background-color:#ffc400;}
+div.note-separator {height:2px; background-color:#827717;}
+p.note-photo {text-align:center;}
+p.note-photo img {max-width:100%; height:auto;}
