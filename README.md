@@ -1,32 +1,48 @@
 # sqink
 
-Scroll, Quill & INK is a multiplatform note taking application. Some of its features are:
+**Scroll, Quill & INK** is a multiplatform note taking application. Some of its features are:
 
 - Relies on the Markdown format, showing the notes in HTML.
 - Can synchronize notes using Dropbox or Google Drive.
-- Tagging and favorites.
-- Filter list of notes by tag or by any word.
+- Uses tags and stars to classify notes.
+- Filters list of notes by tag or by any word.
 - Able to add a photo per note.
 
-Even though it is was not conceived as a journal application, the Dropbox synchronization feature is compatible with [Narrate] <https://play.google.com/store/apps/details?id=com.datonicgroup.narrate.app> and
-Day One <http://dayoneapp.com/>.
+Even though it is was not conceived as a journal application, the Dropbox synchronization feature is compatible with [Narrate](https://play.google.com/store/apps/details?id=com.datonicgroup.narrate.app) for Android and [Day One](http://dayoneapp.com/) for Mac/iOS.
 
 
-## Installation
+## Screenshots
 
-The application requires Python 3.4 or later.
+![](https://github.com/jfveronelli/sqink/raw/master/docs/screenshots/edit.jpg)
 
-If the PySide package is not present, you may install it with pip:
+![](https://github.com/jfveronelli/sqink/raw/master/docs/screenshots/view.jpg)
+
+![](https://github.com/jfveronelli/sqink/raw/master/docs/screenshots/fullscreen.jpg)
+
+
+## Download
+
+Latest version is 1.1.4, released on 2015/10/30.
+
+
+### Windows binary
+
+Download the latest version from [here](https://www.dropbox.com/s/tuauv6m7124x93h/sqink-1.1.4-setup.exe?dl=1), execute to install the application, and run `sqink.exe` to start.
+
+The application may be run from a USB stick. No other requirements are needed.
+
+
+### Other platforms
+
+A working [Python 3.4+](https://www.python.org/) environment is required.
+
+The [PySide 1.2+](http://qt-project.org/wiki/PySide) package must be already installed. Usually it can be installed with PIP:
 
     pip install -U PySide
 
-To run the application, execute:
+Download the application from [here](https://www.dropbox.com/s/kr4lmrjta22u8vh/sqink-1.1.4.zip?dl=1) and run as:
 
     python sqink.py
-
-If using the binary distribution for Windows, no installation is needed, just unzip and run:
-
-    sqink.exe
 
 
 ## Author
