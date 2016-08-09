@@ -8,3 +8,4 @@ div.note-tags span {background-color:#ffc400;}
 div.note-separator {height:2px; background-color:#827717;}
 p.note-photo {text-align:center;}
 p.note-photo img {max-width:100%; height:auto;}
+div.mermaid text {stroke:none;}

@@ -67,6 +67,7 @@ def copyResources():
     copy2("README.md", DIST_PATH)
     copytree("src", DIST_PATH + "/lib")
     copytree("resources/images", DIST_PATH + "/resources/images")
+    copytree("resources/js", DIST_PATH + "/resources/js")
     makedirs(DIST_PATH + "/resources/notes", exist_ok=True)
     copy2("resources/notes/DESCRIPTION.txt", DIST_PATH + "/resources/notes")
     copytree("resources/styles", DIST_PATH + "/resources/styles")

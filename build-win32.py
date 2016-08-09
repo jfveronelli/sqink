@@ -68,6 +68,7 @@ def copyResources():
     copy2("src/dropbox/trusted-certs.crt", DIST_PATH)
     copy2("src/httplib2/cacerts.txt", DIST_PATH)
     copytree("resources/images", DIST_PATH + "/resources/images")
+    copytree("resources/js", DIST_PATH + "/resources/js")
     makedirs(DIST_PATH + "/resources/notes", exist_ok=True)
     copy2("resources/notes/DESCRIPTION.txt", DIST_PATH + "/resources/notes")
     copytree("resources/styles", DIST_PATH + "/resources/styles")
