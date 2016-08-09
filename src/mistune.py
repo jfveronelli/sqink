@@ -11,7 +11,7 @@
 import re
 import inspect
 
-__version__ = '0.6'
+__version__ = '0.7.3'
 __author__ = 'Hsiaoming Yang <me@lepture.com>'
 __all__ = [
     'BlockGrammar', 'BlockLexer',
@@ -22,14 +22,22 @@ __all__ = [
 
 
 _key_pattern = re.compile(r'\s+')
+_nonalpha_pattern = re.compile(r'\W')
 _escape_pattern = re.compile(r'&(?!#?\w+;)')
 _newline_pattern = re.compile(r'\r\n|\r')
-_inline_tag = (
-    r'a|em|strong|small|s|cite|q|dfn|abbr|data|time|code|'
-    r'var|samp|kbd|sub|sup|i|b|u|mark|ruby|rt|rp|bdi|bdo|'
-    r'span|br|wbr|ins|del|img|font'
-)
-_block_tag = r'(?!(?:%s)\b)\w+(?!:/|[^\w\s@]*@)\b' % _inline_tag
+_block_quote_leading_pattern = re.compile(r'^ *> ?', flags=re.M)
+_block_code_leading_pattern = re.compile(r'^ {4}', re.M)
+_inline_tags = [
+    'a', 'em', 'strong', 'small', 's', 'cite', 'q', 'dfn', 'abbr', 'data',
+    'time', 'code', 'var', 'samp', 'kbd', 'sub', 'sup', 'i', 'b', 'u', 'mark',
+    'ruby', 'rt', 'rp', 'bdi', 'bdo', 'span', 'br', 'wbr', 'ins', 'del',
+    'img', 'font',
+]
+_pre_tags = ['pre', 'script', 'style']
+_valid_end = r'(?!:/|[^\w\s@]*@)\b'
+_valid_attr = r'''\s*[a-zA-Z\-](?:\=(?:"[^"]*"|'[^']*'))*'''
+_block_tag = r'(?!(?:%s)\b)\w+%s' % ('|'.join(_inline_tags), _valid_end)
+_scheme_blacklist = ('javascript', 'data', 'vbscript')
 
 
 def _pure_pattern(regex):
@@ -62,6 +70,19 @@ def escape(text, quote=False, smart_amp=True):
         text = text.replace('"', '&quot;')
         text = text.replace("'", '&#39;')
     return text
+
+
+def escape_link(url, **kwargs):
+    """Remove dangerous URL schemes like javascript: and escape afterwards."""
+    if ':' in url:
+        scheme, _ = url.split(':', 1)
+        scheme = _nonalpha_pattern.sub('', scheme)
+        # whitelist would be better but mistune's use case is too general
+        if scheme.lower() in _scheme_blacklist:
+            return ''
+    # escape &entities; to &amp;entities;
+    kwargs['smart_amp'] = False
+    return escape(url, **kwargs)
 
 
 def preprocessing(text, tab=4):
@@ -138,8 +159,8 @@ class BlockGrammar(object):
     block_html = re.compile(
         r'^ *(?:%s|%s|%s) *(?:\n{2,}|\s*$)' % (
             r'<!--[\s\S]*?-->',
-            r'<(%s)[\s\S]+?<\/\1>' % _block_tag,
-            r'''<%s(?:"[^"]*"|'[^']*'|[^'">])*?>''' % _block_tag,
+            r'<(%s)((?:%s)*?)>([\s\S]+?)<\/\1>' % (_block_tag, _valid_attr),
+            r'<%s(?:%s)*?\s*\/?>' % (_block_tag, _valid_attr),
         )
     )
     table = re.compile(
@@ -217,9 +238,8 @@ class BlockLexer(object):
             self.tokens.append({'type': 'newline'})
 
     def parse_block_code(self, m):
-        code = m.group(0)
-        pattern = re.compile(r'^ {4}', re.M)
-        code = pattern.sub('', code)
+        # clean leading whitespace
+        code = _block_code_leading_pattern.sub('', m.group(0))
         self.tokens.append({
             'type': 'code',
             'lang': None,
@@ -280,7 +300,7 @@ class BlockLexer(object):
                 pattern = re.compile(r'^ {1,%d}' % space, flags=re.M)
                 item = pattern.sub('', item)
 
-            # determin whether item is loose or not
+            # determine whether item is loose or not
             loose = _next
             if not loose and re.search(r'\n\n(?!\s*$)', item):
                 loose = True
@@ -303,9 +323,8 @@ class BlockLexer(object):
 
     def parse_block_quote(self, m):
         self.tokens.append({'type': 'block_quote_start'})
-        cap = m.group(0)
-        pattern = re.compile(r'^ *> ?', flags=re.M)
-        cap = pattern.sub('', cap)
+        # clean leading >
+        cap = _block_quote_leading_pattern.sub('', m.group(0))
         self.parse(cap)
         self.tokens.append({'type': 'block_quote_end'})
 
@@ -397,13 +416,22 @@ class BlockLexer(object):
         return item
 
     def parse_block_html(self, m):
-        pre = m.group(1) in ['pre', 'script', 'style']
-        text = m.group(0)
-        self.tokens.append({
-            'type': 'block_html',
-            'pre': pre,
-            'text': text
-        })
+        tag = m.group(1)
+        if not tag:
+            text = m.group(0)
+            self.tokens.append({
+                'type': 'close_html',
+                'text': text
+            })
+        else:
+            attr = m.group(2)
+            text = m.group(3)
+            self.tokens.append({
+                'type': 'open_html',
+                'tag': tag,
+                'extra': attr,
+                'text': text
+            })
 
     def parse_paragraph(self, m):
         text = m.group(1).rstrip('\n')
@@ -421,8 +449,8 @@ class InlineGrammar(object):
     inline_html = re.compile(
         r'^(?:%s|%s|%s)' % (
             r'<!--[\s\S]*?-->',
-            r'<(%s)[\s\S]+?<\/\1>' % _inline_tag,
-            r'''<(?:%s)(?:"[^"]*"|'[^']*'|[^'">])*?>''' % _inline_tag,
+            r'<(\w+%s)((?:%s)*?)>([\s\S]*?)<\/\1>' % (_valid_end, _valid_attr),
+            r'<\w+%s(?:%s)*?\s*\/?>' % (_valid_end, _valid_attr),
         )
     )
     autolink = re.compile(r'^<([^ >]+(@|:)[^ >]+)>')
@@ -446,13 +474,13 @@ class InlineGrammar(object):
         r'^\*{2}([\s\S]+?)\*{2}(?!\*)'  # **word**
     )
     emphasis = re.compile(
-        r'^\b_((?:__|[\s\S])+?)_\b'  # _word_
+        r'^\b_((?:__|[^_])+?)_\b'  # _word_
         r'|'
-        r'^\*((?:\*\*|[\s\S])+?)\*(?!\*)'  # *word*
+        r'^\*((?:\*\*|[^\*])+?)\*(?!\*)'  # *word*
     )
     code = re.compile(r'^(`+)\s*([\s\S]*?[^`])\s*\1(?!`)')  # `code`
     linebreak = re.compile(r'^ {2,}\n(?!\s*$)')
-    strikethrough = re.compile(r'^~~(?=\S)([\s\S]+?\S)~~')  # ~~word~~
+    strikethrough = re.compile(r'^~~(?=\S)([\s\S]*?\S)~~')  # ~~word~~
     footnote = re.compile(r'^\[\^([^\]]+)\]')
     text = re.compile(r'^[\s\S]+?(?=[\\<!\[_*`~]|https?://| {2,}\n|$)')
 
@@ -476,6 +504,11 @@ class InlineLexer(object):
         'double_emphasis', 'emphasis', 'code',
         'linebreak', 'strikethrough', 'text',
     ]
+    inline_html_rules = [
+        'escape', 'autolink', 'url', 'link', 'reflink',
+        'nolink', 'double_emphasis', 'emphasis', 'code',
+        'linebreak', 'strikethrough', 'text',
+    ]
 
     def __init__(self, renderer, rules=None, **kwargs):
         self.renderer = renderer
@@ -486,13 +519,18 @@ class InlineLexer(object):
         if not rules:
             rules = self.grammar_class()
 
+        kwargs.update(self.renderer.options)
+        if kwargs.get('hard_wrap'):
+            rules.hard_wrap()
+
         self.rules = rules
 
         self._in_link = False
         self._in_footnote = False
+        self._parse_inline_html = kwargs.get('parse_inline_html')
 
-    def __call__(self, text):
-        return self.output(text)
+    def __call__(self, text, rules=None):
+        return self.output(text, rules)
 
     def setup(self, links, footnotes):
         self.footnote_index = 0
@@ -536,7 +574,8 @@ class InlineLexer(object):
         return output
 
     def output_escape(self, m):
-        return m.group(1)
+        text = m.group(1)
+        return self.renderer.escape(text)
 
     def output_autolink(self, m):
         link = m.group(1)
@@ -553,7 +592,20 @@ class InlineLexer(object):
         return self.renderer.autolink(link, False)
 
     def output_inline_html(self, m):
-        return self.renderer.inline_html(m.group(0))
+        tag = m.group(1)
+        if self._parse_inline_html and tag in _inline_tags:
+            text = m.group(3)
+            if tag == 'a':
+                self._in_link = True
+                text = self.output(text, rules=self.inline_html_rules)
+                self._in_link = False
+            else:
+                text = self.output(text, rules=self.inline_html_rules)
+            extra = m.group(2) or ''
+            html = '<%s%s>%s</%s>' % (tag, extra, text, tag)
+        else:
+            html = m.group(0)
+        return self.renderer.inline_html(html)
 
     def output_footnote(self, m):
         key = _keyify(m.group(1))
@@ -784,6 +836,13 @@ class Renderer(object):
         """
         return escape(text)
 
+    def escape(self, text):
+        """Rendering escape sequence.
+
+        :param text: text content.
+        """
+        return escape(text)
+
     def autolink(self, link, is_email=False):
         """Rendering a given link or email address.
 
@@ -802,8 +861,7 @@ class Renderer(object):
         :param title: title content for `title` attribute.
         :param text: text content for description.
         """
-        if link.startswith('javascript:'):
-            link = ''
+        link = escape_link(link, quote=True)
         if not title:
             return '<a href="%s">%s</a>' % (link, text)
         title = escape(title, quote=True)
@@ -816,8 +874,7 @@ class Renderer(object):
         :param title: title text of the image.
         :param text: alt text of the image.
         """
-        if src.startswith('javascript:'):
-            src = ''
+        src = escape_link(src, quote=True)
         text = escape(text, quote=True)
         if title:
             title = escape(title, quote=True)
@@ -883,11 +940,14 @@ class Markdown(object):
     """The Markdown parser.
 
     :param renderer: An instance of ``Renderer``.
+    :param inline: An inline lexer class or instance.
+    :param block: A block lexer class or instance.
     """
-
     def __init__(self, renderer=None, inline=None, block=None, **kwargs):
         if not renderer:
             renderer = Renderer(**kwargs)
+        else:
+            kwargs.update(renderer.options)
 
         self.renderer = renderer
 
@@ -899,15 +959,14 @@ class Markdown(object):
         if inline:
             self.inline = inline
         else:
-            rules = InlineGrammar()
-            if kwargs.get('hard_wrap'):
-                rules.hard_wrap()
-            self.inline = InlineLexer(renderer, rules=rules)
+            self.inline = InlineLexer(renderer, **kwargs)
 
         self.block = block or BlockLexer(BlockGrammar())
-        self.options = kwargs
         self.footnotes = []
         self.tokens = []
+
+        # detect if it should parse text in block html
+        self._parse_block_html = kwargs.get('parse_block_html')
 
     def __call__(self, text):
         return self.parse(text)
@@ -1070,11 +1129,18 @@ class Markdown(object):
         self.inline._in_footnote = False
         return self.renderer.placeholder()
 
-    def output_block_html(self):
+    def output_close_html(self):
         text = self.token['text']
-        if self.options.get('parse_html') and not self.token.get('pre'):
-            text = self.inline(text)
         return self.renderer.block_html(text)
+
+    def output_open_html(self):
+        text = self.token['text']
+        tag = self.token['tag']
+        if self._parse_block_html and tag not in _pre_tags:
+            text = self.inline(text, rules=self.inline.inline_html_rules)
+        extra = self.token.get('extra') or ''
+        html = '<%s%s>%s</%s>' % (tag, extra, text, tag)
+        return self.renderer.block_html(html)
 
     def output_paragraph(self):
         return self.renderer.paragraph(self.inline(self.token['text']))
@@ -1083,11 +1149,14 @@ class Markdown(object):
         return self.renderer.paragraph(self.tok_text())
 
 
-def markdown(text, **kwargs):
+def markdown(text, escape=True, **kwargs):
     """Render markdown formatted text to html.
 
     :param text: markdown formatted text content.
-    :param escape: if set to True, all html tags will be escaped.
+    :param escape: if set to False, all html tags will not be escaped.
     :param use_xhtml: output with xhtml tags.
+    :param hard_wrap: if set to True, it will use the GFM line breaks feature.
+    :param parse_block_html: parse text only in block level html.
+    :param parse_inline_html: parse text only in inline level html.
     """
-    return Markdown(**kwargs)(text)
+    return Markdown(escape=escape, **kwargs)(text)

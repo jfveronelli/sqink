@@ -1,14 +1,20 @@
 """
+Deprecated: This is included only to support the use of the old v1 client
+class. It will be removed once v2 is at parity with v1. Do not use this for any
+new functionality.
+
 A simple JSON REST request abstraction layer that is used by the
-``dropbox.client`` and ``dropbox.session`` modules. You shouldn't need to use this.
+``dropbox.client`` and ``dropbox.session`` modules. You shouldn't need to use
+this.
 """
 
 import io
 import pkg_resources
+import six
 import socket
 import ssl
 import sys
-import urllib.request, urllib.parse, urllib.error
+import urllib
 
 try:
     import json
@@ -20,13 +26,12 @@ try:
 except ImportError:
     raise ImportError('Dropbox python client requires urllib3.')
 
+if six.PY3:
+    url_encode = urllib.parse.urlencode
+else:
+    url_encode = urllib.urlencode
 
-SDK_VERSION = "2.2.0"
-
-try:
-    TRUSTED_CERT_FILE = pkg_resources.resource_filename(__name__, 'trusted-certs.crt')
-except NotImplementedError:
-    TRUSTED_CERT_FILE = sys.prefix + '/trusted-certs.crt' #hack for py2exe
+TRUSTED_CERT_FILE = pkg_resources.resource_filename(__name__, 'trusted-certs.crt')
 
 
 class RESTResponse(io.IOBase):
@@ -90,11 +95,6 @@ class RESTResponse(io.IOBase):
         # Double closing is harmless
         if self.is_closed:
             return
-
-        # Read any remaining crap off the socket before releasing the
-        # connection. Buffer it just in case it's huge
-        while self.read(RESTResponse.BLOCKSIZE):
-            pass
 
         # Mark as closed and release the connection (exactly once)
         self.is_closed = True
@@ -185,27 +185,32 @@ class RESTClientObject(object):
             ssl_version=ssl.PROTOCOL_TLSv1,
         )
 
-    def request(self, method, url, post_params=None, body=None, headers=None, raw_response=False):
+    def request(self, method, url, post_params=None, body=None, headers=None, raw_response=False,
+                is_json_request=False):
         """Performs a REST request. See :meth:`RESTClient.request()` for detailed description."""
 
-        post_params = post_params or {}
         headers = headers or {}
-        headers['User-Agent'] = 'OfficialDropboxPythonSDK/' + SDK_VERSION
 
-        if post_params:
+        from dropbox import __version__
+        headers['User-Agent'] = 'OfficialDropboxPythonSDK/' + __version__
+
+        if post_params is not None:
             if body:
                 raise ValueError("body parameter cannot be used with post_params parameter")
-            body = params_to_urlencoded(post_params)
-            headers["Content-type"] = "application/x-www-form-urlencoded"
+            if is_json_request:
+                body = json.dumps(post_params)
+                headers["Content-type"] = "application/json"
+            else:
+                body = params_to_urlencoded(post_params)
+                headers["Content-type"] = "application/x-www-form-urlencoded"
 
-        # Handle StringIO instances, because urllib3 doesn't.
+        # Handle StringIO/BytesIO instances, because urllib3 doesn't.
         if hasattr(body, 'getvalue'):
-            body = str(body.getvalue())
-            headers["Content-Length"] = len(body)
+            body = body.getvalue()
 
         # Reject any headers containing newlines; the error from the server isn't pretty.
-        for key, value in list(headers.items()):
-            if isinstance(value, str) and '\n' in value:
+        for key, value in headers.items():
+            if isinstance(value, six.string_types) and '\n' in value:
                 raise ValueError("headers should not contain newlines (%s: %s)" %
                                  (key, value))
 
@@ -248,13 +253,11 @@ class RESTClientObject(object):
         assert type(raw_response) == bool
         return self.request("GET", url, headers=headers, raw_response=raw_response)
 
-    def POST(self, url, params=None, headers=None, raw_response=False):
+    def POST(self, url, params=None, headers=None, raw_response=False, is_json_request=False):
         assert type(raw_response) == bool
-        if params is None:
-            params = {}
-
         return self.request("POST", url,
-                            post_params=params, headers=headers, raw_response=raw_response)
+                            post_params=params, headers=headers, raw_response=raw_response,
+                            is_json_request=is_json_request)
 
     def PUT(self, url, body, headers=None, raw_response=False):
         assert type(raw_response) == bool
@@ -411,9 +414,9 @@ def params_to_urlencoded(params):
     objects which are utf8-encoded.
     """
     def encode(o):
-        if isinstance(o, str):
+        if isinstance(o, six.text_type):
             return o.encode('utf8')
         else:
             return str(o)
-    utf8_params = {encode(k): encode(v) for k, v in params.items()}
-    return urllib.parse.urlencode(utf8_params)
+    utf8_params = {encode(k): encode(v) for k, v in six.iteritems(params)}
+    return url_encode(utf8_params)

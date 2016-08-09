@@ -1,18 +1,22 @@
+"""
+Deprecated v1 API client. To be removed once v2 is at parity with v1.
+"""
 
+from __future__ import absolute_import
 
 import base64
-import re
+from io import BytesIO
 import os
-import sys
-import urllib.request, urllib.parse, urllib.error
+import re
+import six
+import urllib
+import warnings
 
-PY3 = sys.version_info[0] == 3
-
-if PY3:
-    from io import StringIO
-    str = str
+if six.PY3:
+    basestring = str
+    url_path_quote = urllib.parse.quote
 else:
-    from io import StringIO
+    url_path_quote = urllib.quote
 
 try:
     import json
@@ -36,22 +40,21 @@ def format_path(path):
     path = re.sub(r'/+', '/', path)
 
     if path == '/':
-        return ("" if isinstance(path, str) else "")
+        return ''
     else:
         return '/' + path.strip('/')
 
 
 class DropboxClient(object):
     """
-    This class lets you make Dropbox API calls.  You'll need to obtain an
-    OAuth 2 access token first.  You can get an access token using either
-    :class:`DropboxOAuth2Flow` or :class:`DropboxOAuth2FlowNoRedirect`.
+    This is a deprecated class for making calls to the Dropbox v1 API. Please
+    use the v2 API by instantiating :class:`dropbox.Dropbox` instead.
 
-    All of the API call methods can raise a :class:`dropbox.rest.ErrorResponse` exception if
-    the server returns a non-200 or invalid HTTP response. Note that a 401
-    return status at any point indicates that the access token you're using
-    is no longer valid and the user must be put through the OAuth 2
-    authorization flow again.
+    All of the API call methods can raise a :class:`dropbox.rest.ErrorResponse`
+    exception if the server returns a non-200 or invalid HTTP response. Note
+    that a 401 return status at any point indicates that the access token
+    you're using is no longer valid and the user must be put through the OAuth
+    2 authorization flow again.
     """
 
     def __init__(self, oauth2_access_token, locale=None, rest_client=None):
@@ -69,8 +72,12 @@ class DropboxClient(object):
             Optional :class:`dropbox.rest.RESTClient`-like object to use for making
             requests.
         """
+        warnings.warn(
+            'You are using a deprecated client. Please use the new v2 client '
+            'located at dropbox.Dropbox.', DeprecationWarning, stacklevel=2)
+
         if rest_client is None: rest_client = RESTClient
-        if isinstance(oauth2_access_token, str):
+        if isinstance(oauth2_access_token, basestring):
             if not _OAUTH2_ACCESS_TOKEN_PATTERN.match(oauth2_access_token):
                 raise ValueError("invalid format for oauth2_access_token: %r"
                                  % (oauth2_access_token,))
@@ -145,7 +152,6 @@ class DropboxClient(object):
               https://www.dropbox.com/developers/core/docs#account-info
         """
         url, params, headers = self.request("/account/info", method='GET')
-
         return self.rest_client.GET(url, headers)
 
     def disable_access_token(self):
@@ -1173,7 +1179,7 @@ class ChunkedUploader(object):
 
             try:
                 (self.offset, self.upload_id) = self.client.upload_chunk(
-                    StringIO(self.last_block), next_chunk_size, self.offset, self.upload_id)
+                    BytesIO(self.last_block), next_chunk_size, self.offset, self.upload_id)
                 self.last_block = None
             except ErrorResponse as e:
                 # Handle the case where the server tells us our offset is wrong.
@@ -1283,10 +1289,10 @@ class DropboxOAuth2FlowBase(object):
         Returns
             The path and parameters components of an API URL.
         """
-        if sys.version_info < (3,) and type(target) == str:
+        if six.PY2 and isinstance(target, six.text_type):
             target = target.encode("utf8")
 
-        target_path = urllib.parse.quote(target)
+        target_path = url_path_quote(target)
 
         params = params or {}
         params = params.copy()
@@ -1410,7 +1416,7 @@ class DropboxOAuth2Flow(DropboxOAuth2FlowBase):
         from dropbox.client import DropboxOAuth2Flow, DropboxClient
 
         def get_dropbox_auth_flow(web_app_session):
-            redirect_uri = "https://my-web-server.org/dropbox-auth-finish")
+            redirect_uri = "https://my-web-server.org/dropbox-auth-finish"
             return DropboxOAuth2Flow(APP_KEY, APP_SECRET, redirect_uri,
                                      web_app_session, "dropbox-auth-csrf-token")
 
@@ -1498,7 +1504,9 @@ class DropboxOAuth2Flow(DropboxOAuth2FlowBase):
             your app, which gives your app permission to access the user's Dropbox account.
             Tell the user to visit this URL and approve your app.
         """
-        csrf_token = base64.urlsafe_b64encode(os.urandom(16))
+        csrf_token = base64.urlsafe_b64encode(os.urandom(16))  # PY3: Returns bytes
+        if not isinstance(csrf_token, str):
+            csrf_token = csrf_token.decode('utf-8')
         state = csrf_token
         if url_state is not None:
             state += "|" + url_state
@@ -1535,8 +1543,6 @@ class DropboxOAuth2Flow(DropboxOAuth2FlowBase):
             If Dropbox redirected to your redirect URI with some unexpected error identifier
             and error message.
         """
-        csrf_token_from_session = self.session[self.csrf_token_session_key]
-
         # Check well-formedness of request.
 
         state = query_params.get('state')
@@ -1555,8 +1561,9 @@ class DropboxOAuth2Flow(DropboxOAuth2FlowBase):
 
         # Check CSRF token
 
-        if csrf_token_from_session is None:
-            raise self.BadStateError("Missing CSRF token in session.")
+        if self.csrf_token_session_key not in self.session:
+            raise self.BadStateException("Missing CSRF token in session.")
+        csrf_token_from_session = self.session[self.csrf_token_session_key]
         if len(csrf_token_from_session) <= 20:
             raise AssertionError("CSRF token unexpectedly short: %r" % (csrf_token_from_session,))
 
@@ -1589,7 +1596,7 @@ class DropboxOAuth2Flow(DropboxOAuth2FlowBase):
                 full_message = error
                 if error_description is not None:
                     full_message += ": " + error_description
-                raise self.ProviderError(full_message)
+                raise self.ProviderException(full_message)
 
         # If everything went ok, make the network call to get an access token.
 

@@ -1,26 +1,57 @@
+import pkg_resources
+import ssl
+import sys
+
+import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.poolmanager import PoolManager
+
+
+_TRUSTED_CERT_FILE = pkg_resources.resource_filename(__name__, 'trusted-certs.crt')
+
+
+# TODO(kelkabany): We probably only want to instantiate this once so that even
+# if multiple Dropbox objects are instantiated, they all share the same pool.
+class _SSLAdapter(HTTPAdapter):
+    def init_poolmanager(self, connections, maxsize, block=False):
+        self.poolmanager = PoolManager(num_pools=connections,
+                                       maxsize=maxsize,
+                                       block=block,
+                                       cert_reqs=ssl.CERT_REQUIRED,
+                                       ca_certs=_TRUSTED_CERT_FILE,
+                                       ssl_version=ssl.PROTOCOL_TLSv1)
+
+def pinned_session(pool_maxsize=8):
+    http_adapter = _SSLAdapter(pool_connections=4,
+                               pool_maxsize=pool_maxsize)
+
+    _session = requests.session()
+    _session.mount('https://', http_adapter)
+
+    return _session
+
 """
-dropbox.session.DropboxSession is responsible for holding OAuth authentication
-info (app key/secret, request key/secret, access key/secret). It knows how to
-use all of this information to craft properly constructed requests to Dropbox.
-
-A DropboxSession object must be passed to a dropbox.client.DropboxClient object upon
-initialization.
-
+Deprecated: The code below is included only to support the use of the old v1
+client class. It will be removed once v2 is at parity with v1. Do not use this
+for any new functionality.
 """
-
 
 import random
-import sys
+import six
 import time
-import urllib.request, urllib.parse, urllib.error
-
-try:
-    from urllib.parse import parse_qs
-except ImportError:
-    # fall back for Python 2.5
-    from cgi import parse_qs
+import urllib
 
 from . import rest
+
+if six.PY2:
+    from urlparse import parse_qs
+    url_path_quote = urllib.quote
+    url_encode = urllib.urlencode
+else:
+    from urllib.parse import parse_qs
+    url_path_quote = urllib.parse.quote
+    url_encode = urllib.parse.urlencode
+
 
 class OAuthToken(object):
     """
@@ -89,10 +120,10 @@ class BaseSession(object):
         Returns:
             - The path and parameters components of an API URL.
         """
-        if sys.version_info < (3,) and type(target) == str:
+        if six.PY2 and isinstance(target, six.text_type):
             target = target.encode("utf8")
 
-        target_path = urllib.parse.quote(target)
+        target_path = url_path_quote(target)
 
         params = params or {}
         params = params.copy()
@@ -101,7 +132,7 @@ class BaseSession(object):
             params['locale'] = self.locale
 
         if params:
-            return "/%s%s?%s" % (self.API_VERSION, target_path, urllib.parse.urlencode(params))
+            return "/%s%s?%s" % (self.API_VERSION, target_path, url_encode(params))
         else:
             return "/%s%s" % (self.API_VERSION, target_path)
 
@@ -250,9 +281,12 @@ class DropboxSession(BaseSession):
 
         self._oauth_sign_request(oauth_params, self.consumer_creds, token)
 
-        params.update(oauth_params)
+        headers = {
+            'Authorization':
+                'OAuth %s' % ','.join(
+                    '%s="%s"' % (k, v) for k, v in six.iteritems(oauth_params))}
 
-        return {}, params
+        return headers, params
 
     @classmethod
     def _oauth_sign_request(cls, params, consumer_pair, token_pair):
@@ -267,7 +301,7 @@ class DropboxSession(BaseSession):
 
     @classmethod
     def _generate_oauth_nonce(cls, length=8):
-        return ''.join([str(random.randint(0, 9)) for i in range(length)])
+        return ''.join([str(random.SystemRandom().randint(0, 9)) for i in range(length)])
 
     @classmethod
     def _oauth_version(cls):
@@ -282,13 +316,19 @@ class DropboxSession(BaseSession):
         if not params:
             raise ValueError("Invalid parameter string: %r" % s)
 
+        if six.PY2:
+            oauth_token_key = 'oauth_token'
+            oauth_token_secret_key = 'oauth_token_secret'
+        else:
+            oauth_token_key = b'oauth_token'
+            oauth_token_secret_key = b'oauth_token_secret'
         try:
-            key = params['oauth_token'][0]
+            key = params[oauth_token_key][0]
         except Exception:
             raise ValueError("'oauth_token' not found in OAuth request.")
 
         try:
-            secret = params['oauth_token_secret'][0]
+            secret = params[oauth_token_secret_key][0]
         except Exception:
             raise ValueError("'oauth_token_secret' not found in "
                              "OAuth request.")

@@ -10,6 +10,7 @@ processing.
 
 from __future__ import absolute_import
 from __future__ import unicode_literals
+from collections import OrderedDict
 from . import util
 from . import odict
 import re
@@ -42,7 +43,7 @@ class Postprocessor(util.Processor):
         (possibly modified) string.
 
         """
-        pass #pragma: no cover
+        pass  # pragma: no cover
 
 
 class RawHtmlPostprocessor(Postprocessor):
@@ -50,8 +51,9 @@ class RawHtmlPostprocessor(Postprocessor):
 
     def run(self, text):
         """ Iterate over html stash and restore "safe" html. """
+        replacements = OrderedDict()
         for i in range(self.markdown.htmlStash.html_counter):
-            html, safe  = self.markdown.htmlStash.rawHtmlBlocks[i]
+            html, safe = self.markdown.htmlStash.rawHtmlBlocks[i]
             if self.markdown.safeMode and not safe:
                 if str(self.markdown.safeMode).lower() == 'escape':
                     html = self.escape(html)
@@ -59,12 +61,17 @@ class RawHtmlPostprocessor(Postprocessor):
                     html = ''
                 else:
                     html = self.markdown.html_replacement_text
-            if self.isblocklevel(html) and (safe or not self.markdown.safeMode):
-                text = text.replace("<p>%s</p>" % 
-                            (self.markdown.htmlStash.get_placeholder(i)),
-                            html + "\n")
-            text =  text.replace(self.markdown.htmlStash.get_placeholder(i), 
-                                 html)
+            if (self.isblocklevel(html) and
+               (safe or not self.markdown.safeMode)):
+                replacements["<p>%s</p>" %
+                             (self.markdown.htmlStash.get_placeholder(i))] = \
+                    html + "\n"
+            replacements[self.markdown.htmlStash.get_placeholder(i)] = html
+
+        if replacements:
+            pattern = re.compile("|".join(re.escape(k) for k in replacements))
+            text = pattern.sub(lambda m: replacements[m.group(0)], text)
+
         return text
 
     def escape(self, html):
@@ -88,7 +95,7 @@ class AndSubstitutePostprocessor(Postprocessor):
     """ Restore valid entities """
 
     def run(self, text):
-        text =  text.replace(util.AMP_SUBSTITUTE, "&")
+        text = text.replace(util.AMP_SUBSTITUTE, "&")
         return text
 
 
