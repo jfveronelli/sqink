@@ -12,7 +12,7 @@ from crossknight.sqink.provider import TokenExpiredError
 from datetime import datetime
 from datetime import timezone
 from dropbox.client import DropboxClient
-from dropbox.client import DropboxOAuth2FlowNoRedirect
+from dropbox.oauth import DropboxOAuth2FlowNoRedirect
 from dropbox.rest import ErrorResponse
 from dropbox.rest import RESTClientObject
 from dropbox.rest import TRUSTED_CERT_FILE
