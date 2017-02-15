@@ -5,6 +5,8 @@ if pythonVersion < 3.4:
     print("Python 3.4 or later is required")
     sys.exit(1)
 
+from locale import LC_ALL
+from locale import setlocale
 from os.path import abspath
 from os.path import dirname
 from os.path import normpath
@@ -22,6 +24,7 @@ from crossknight.sqink.ui import Window
 
 def main():
     app= QApplication(argv)
+    setlocale(LC_ALL, "C")
     window= Window(appPath)
 
     window.show()
