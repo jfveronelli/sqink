@@ -1,6 +1,6 @@
-#coding:utf-8
+# coding:utf-8
 from crossknight.sqink.domain import isUuid
-from crossknight.sqink.domain import uuid
+from crossknight.sqink.domain import newUuid
 from unittest import TestCase
 
 
@@ -16,7 +16,7 @@ class ModuleTest(TestCase):
         self.assertFalse(isUuid("ABCDEF0123456789ABCDEF01234567890"))
 
     def testUuidShouldSucceed(self):
-        result= uuid()
+        result = newUuid()
 
         self.assertTrue(isUuid(result))
         self.assertEqual(str, type(result))

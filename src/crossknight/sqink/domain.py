@@ -1,13 +1,13 @@
-#coding:utf-8
+# coding:utf-8
 from binascii import hexlify
 from re import compile
 from uuid import uuid4
 
 
-_UUID= compile(r"^[0-9A-F]{32}\Z")
+_UUID = compile(r"^[0-9A-F]{32}\Z")
 
 
-def uuid():
+def newUuid():
     return hexlify(uuid4().bytes).upper().decode("ascii")
 
 
@@ -16,10 +16,10 @@ def isUuid(name):
 
 
 def listTags(notes):
-    result= []
+    result = []
     for note in notes:
         for tag in note.tags:
-            if not tag in result:
+            if tag not in result:
                 result.append(tag)
     result.sort(key=str.lower)
     return result
@@ -27,17 +27,17 @@ def listTags(notes):
 
 class Note:
 
-    def __init__(self, uuid=None, lastModified=None, createdOn=None, title=None, tags=[], starred=False, text=None,
-            html=None, photo=None):
-        self.uuid= uuid
-        self.lastModified= lastModified
-        self.createdOn= createdOn
-        self.title= title
-        self.tags= tags
-        self.starred= starred
-        self.text= text
-        self.html= html
-        self.photo= photo
+    def __init__(self, uuid=None, lastModified=None, createdOn=None, title=None, tags=None, starred=False, text=None,
+                 html=None, photo=None):
+        self.uuid = uuid
+        self.lastModified = lastModified
+        self.createdOn = createdOn
+        self.title = title
+        self.tags = tags if tags is not None else []
+        self.starred = starred
+        self.text = text
+        self.html = html
+        self.photo = photo
 
     def __repr__(self):
         return "crossknight.sqink.domain.Note(\n" +\
@@ -56,16 +56,16 @@ class Note:
 
     def copy(self):
         return Note(self.uuid, self.lastModified, self.createdOn, self.title, self.tags[:], self.starred, self.text,
-                self.html, self.photo)
+                    self.html, self.photo)
 
 
 class NoteStatus:
 
     def __init__(self, uuid, lastModified, removed=False, hasPhoto=False):
-        self.uuid= uuid
-        self.lastModified= lastModified
-        self.removed= removed
-        self.hasPhoto= hasPhoto
+        self.uuid = uuid
+        self.lastModified = lastModified
+        self.removed = removed
+        self.hasPhoto = hasPhoto
 
     def __repr__(self):
         return "crossknight.sqink.domain.NoteStatus(\n" +\

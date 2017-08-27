@@ -1,4 +1,6 @@
-#coding:utf-8
+# coding:utf-8
+from abc import ABC
+from abc import abstractmethod
 from datetime import timedelta
 
 
@@ -14,55 +16,63 @@ class TokenExpiredError(Exception):
     pass
 
 
-class RemoteNoteProvider:
+class RemoteNoteProvider(ABC):
 
-    def requiresReverseUpdate(self):
+    @staticmethod
+    def requiresReverseUpdate():
         return False
 
+    @abstractmethod
     def sync(self):
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def get(self, uuid):
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def add(self, note):
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def update(self, note):
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def remove(self, note):
-        raise NotImplementedError
+        pass
 
 
 class LocalNoteProvider(RemoteNoteProvider):
 
+    @abstractmethod
     def list(self):
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def search(self, alphanum):
-        raise NotImplementedError
+        pass
 
     def close(self):
         pass
 
 
-class Synchronizer:
+class Synchronizer(object):
 
     def __init__(self, noteProviderA, noteProviderB):
-        self.__noteProviderA= noteProviderA
-        self.__noteProviderB= noteProviderB
+        self.__noteProviderA = noteProviderA
+        self.__noteProviderB = noteProviderB
 
     def sync(self):
-        noteStatusDictA= self.__noteProviderA.sync()
-        noteStatusDictB= self.__noteProviderB.sync()
+        noteStatusDictA = self.__noteProviderA.sync()
+        noteStatusDictB = self.__noteProviderB.sync()
         self.__applyChanges(noteStatusDictA, self.__noteProviderA, noteStatusDictB, self.__noteProviderB)
         self.__applyChanges(noteStatusDictB, self.__noteProviderB, noteStatusDictA, self.__noteProviderA)
 
     def __applyChanges(self, fromNoteStatusDict, fromNoteProvider, toNoteStatusDict, toNoteProvider):
         for fromNoteStatus in fromNoteStatusDict.values():
-            uuid= fromNoteStatus.uuid
-            toNoteStatus= toNoteStatusDict.get(uuid)
+            uuid = fromNoteStatus.uuid
+            toNoteStatus = toNoteStatusDict.get(uuid)
             if toNoteStatus is None:
                 if fromNoteStatus.removed:
                     self.__removeNote(toNoteProvider, fromNoteStatus, fromNoteProvider)
@@ -78,23 +88,27 @@ class Synchronizer:
             elif fromNoteStatus.removed and not toNoteStatus.removed:
                 self.__removeNote(toNoteProvider, fromNoteStatus, fromNoteProvider)
 
-    def __isUpdatedLater(self, noteStatus, otherNoteStatus):
+    @staticmethod
+    def __isUpdatedLater(noteStatus, otherNoteStatus):
         return noteStatus.lastModified - otherNoteStatus.lastModified >= timedelta(seconds=1)
 
-    def __addNote(self, noteProvider, uuid, sourceNoteProvider):
-        note= sourceNoteProvider.get(uuid)
+    @staticmethod
+    def __addNote(noteProvider, uuid, sourceNoteProvider):
+        note = sourceNoteProvider.get(uuid)
         noteProvider.add(note)
         if noteProvider.requiresReverseUpdate():
             sourceNoteProvider.update(note)
 
-    def __updateNote(self, noteProvider, uuid, sourceNoteProvider):
-        note= sourceNoteProvider.get(uuid)
+    @staticmethod
+    def __updateNote(noteProvider, uuid, sourceNoteProvider):
+        note = sourceNoteProvider.get(uuid)
         noteProvider.update(note)
         if noteProvider.requiresReverseUpdate():
             sourceNoteProvider.update(note)
 
-    def __removeNote(self, noteProvider, noteStatus, sourceNoteProvider):
-        note= noteStatus.asNote()
+    @staticmethod
+    def __removeNote(noteProvider, noteStatus, sourceNoteProvider):
+        note = noteStatus.asNote()
         noteProvider.remove(note)
         if noteProvider.requiresReverseUpdate():
             sourceNoteProvider.remove(note)

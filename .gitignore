@@ -1,6 +1,7 @@
 __pycache__
-/dist
-/python
-/resources/notes/*.jpg
-/resources/notes/notes.db
-/sqink.ini
+/.idea/*.xml
+/.idea/*/**
+/src/sqink.ini
+/src/resources/notes/*.jpg
+/src/resources/notes/notes.db
+/dist/*/**

@@ -8,8 +8,6 @@
 - Filters list of notes by tag or by any word.
 - Able to add a photo per note.
 
-Even though it is was not conceived as a journal application, the Dropbox synchronization feature is compatible with [Narrate](https://play.google.com/store/apps/details?id=com.datonicgroup.narrate.app) for Android and [Day One](http://dayoneapp.com/) for Mac/iOS.
-
 
 ## Screenshots
 
@@ -22,25 +20,25 @@ Even though it is was not conceived as a journal application, the Dropbox synchr
 
 ## Download
 
-Latest version is 1.1.4, released on 2015/10/30.
+Latest version is 1.2.0, released on 2017/09/01.
 
 
 ### Windows binary
 
-Download the latest version from [here](https://www.dropbox.com/s/tuauv6m7124x93h/sqink-1.1.4-setup.exe?dl=1), execute to install the application, and run `sqink.exe` to start.
+Download the latest version from [here](https://github.com/jfveronelli/sqink/raw/master/dist/sqink-win32.exe), execute the file to extract the application, and the run `sqink.exe` to start.
 
 The application may be run from a USB stick. No other requirements are needed.
 
 
 ### Other platforms
 
-A working [Python 3.4+](https://www.python.org/) environment is required.
+A working [Python 3.4](https://www.python.org/) environment is required.
 
-The [PySide 1.2+](http://qt-project.org/wiki/PySide) package must be already installed. Usually it can be installed with PIP:
+The [PySide 1.2](http://qt-project.org/wiki/PySide) package must be already installed. Usually it can be installed with PIP:
 
-    pip install -U PySide
+    python -m pip install -U PySide
 
-Download the application from [here](https://www.dropbox.com/s/kr4lmrjta22u8vh/sqink-1.1.4.zip?dl=1) and run as:
+Download the application from [here](https://github.com/jfveronelli/sqink/raw/master/dist/sqink-linux.zip), unzip file, and run as:
 
     python sqink.py
 
@@ -60,7 +58,7 @@ This application would not be possible without the following libraries and resou
 - Python-Markdown <http://pythonhosted.org/Markdown/>
 - Dropbox Core API for Python <https://www.dropbox.com/developers/core>
 - Google APIs Client Library for Python <https://developers.google.com/api-client-library/python/>
-- py2exe <http://www.py2exe.org/>
+- cx_Freeze <https://anthony-tuininga.github.io/cx_Freeze/>
 - mermaid <http://knsv.github.io/mermaid/>
 - Xiao Icons <http://delacro.deviantart.com/art/Xiao-Icon-84772282>
 

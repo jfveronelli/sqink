@@ -1,0 +1,21 @@
+To create this pack:
+1. Download python installation from [www.python.org].
+2. Install:
+  a. Choose [Install just for me].
+     (otherwise, some files are copied to Windows <system32> folder)
+  b. Remove all features except:
+    + [Tcl/Tk]
+    + [Documentation]
+    + [Utility Scripts]
+    + [pip]
+  c. On [Advanced] options, deselect [Compile .py files].
+3. Remove:
+  a. From <root>: [*.txt], [include] and [Scripts]
+  b. From <root/Lib>: [idlelib] and [turtledemo]
+  c. From <root/Lib/site-packages/pkg_resources>: [tests]
+  d. From <root/Lib/site-packages/setuptools>: [tests]
+  e. From <root/*>: [__pycache__]
+5. Copy [HOW_TO.txt] and [register.py] to <root>.
+
+To register python:
+1. Run [register.py].

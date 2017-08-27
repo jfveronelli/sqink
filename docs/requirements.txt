@@ -1,27 +1,49 @@
 # How to install dependencies:
-#   python -m pip install -r docs/requirements.txt -t src
+#   python -m pip install -U pip
+#   python -m pip install -r ../docs/requirements.txt
 
-PySide >= 1.2.4
+PySide == 1.2.4
   #python/Lib/site-packages/PySide/*
   #python/Lib/site-packages/pysideuic/*
-py2exe >= 0.9.2.2
-  #python/Lib/site-packages/py2exe/*
-mistune >= 0.7.3
-  #src/mistune.py
-Markdown >= 2.6.6
-  #src/markdown/*
-dropbox >= 6.6.0
-  #src/dropbox/*
-  #src/requests/*
-  #src/urllib3/*
-  #src/six.py
-google-api-python-client >= 1.3.1
-  #src/apiclient/*
-  #src/googleapiclient/*
-  #src/httplib2/*
-  #src/oauth2client/*
-  #src/pyasn1/*
-  #src/pyasn1_modules/*
-  #src/rsa/*
-  #src/simplejson/*
-  #src/uritemplate/*
+
+mistune >= 0.7.4
+  #python/Lib/site-packages/mistune/*
+  #python/Lib/site-packages/mistune.py
+
+Markdown >= 2.6.9
+  #python/Lib/site-packages/markdown/*
+
+dropbox >= 8.0.0
+  #python/Lib/site-packages/certifi/*
+  #python/Lib/site-packages/chardet/*
+  #python/Lib/site-packages/dropbox/*
+  #python/Lib/site-packages/idna/*
+  #python/Lib/site-packages/requests/*
+  #python/Lib/site-packages/urllib3/*
+  #python/Lib/site-packages/six.py
+
+google-api-python-client >= 1.6.2
+  #python/Lib/site-packages/apiclient/*
+  #python/Lib/site-packages/googleapiclient/*
+  #python/Lib/site-packages/httplib2/*
+  #python/Lib/site-packages/oauth2client/*
+  #python/Lib/site-packages/pyasn1/*
+  #python/Lib/site-packages/pyasn1_modules/*
+  #python/Lib/site-packages/rsa/*
+  #python/Lib/site-packages/uritemplate/*
+  #python/Lib/site-packages/six.py
+
+cx_Freeze >= 5.0.2
+  #python/Lib/site-packages/cx_Freeze/*
+
+pypiwin32 >= 219
+  #python/Lib/site-packages/adodbapi/*
+  #python/Lib/site-packages/isapi/*
+  #python/Lib/site-packages/pypiwin32_system32/*
+  #python/Lib/site-packages/pythonwin/*
+  #python/Lib/site-packages/win32/*
+  #python/Lib/site-packages/win32com/*
+  #python/Lib/site-packages/win32comext/*
+  #python/Lib/site-packages/pypiwin32.pth
+  #python/Lib/site-packages/pypiwin32.version.txt
+  #python/Lib/site-packages/pythoncom.py
