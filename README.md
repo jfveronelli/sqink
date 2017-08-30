@@ -38,7 +38,7 @@ The [PySide 1.2](http://qt-project.org/wiki/PySide) package must be already inst
 
     python -m pip install -U PySide
 
-Download the application from [here](https://github.com/jfveronelli/sqink/raw/master/dist/sqink-linux.zip), unzip file, and run as:
+Download the application from [here](https://github.com/jfveronelli/sqink/raw/master/dist/sqink-1.2.0-linux.tar.gz), unpack file, and run as:
 
     python sqink.py
 
