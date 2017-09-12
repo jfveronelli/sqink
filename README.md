@@ -1,4 +1,5 @@
 # sqink
+[![GitHub release](https://img.shields.io/github/release/jfveronelli/sqink.svg)](https://github.com/jfveronelli/sqink/releases/latest)
 
 **Scroll, Quill & INK** is a multiplatform note taking application. Some of its features are:
 
@@ -63,7 +64,7 @@ This application would not be possible without the following libraries and resou
 - Xiao Icons <http://delacro.deviantart.com/art/Xiao-Icon-84772282>
 
 
-## License
+## MIT License
 
 Copyright (c) 2014 CrossKnight
 
