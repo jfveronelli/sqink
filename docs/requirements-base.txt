@@ -24,3 +24,6 @@ google-api-python-client >= 1.6.2
   #python/Lib/site-packages/rsa/*
   #python/Lib/site-packages/uritemplate/*
   #python/Lib/site-packages/six.py
+
+coverage >= 4.4.1
+  #python/Lib/site-packages/coverage/*

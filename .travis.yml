@@ -7,4 +7,6 @@ install:
   - pip install -r docs/requirements-base.txt
 script:
   - cd test
-  - python -m unittest runall
+  - python -m coverage run --source ../src --omit */src/build.py runall.py
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
