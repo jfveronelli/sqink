@@ -4,6 +4,10 @@
 
 -r requirements-base.txt
 
+PySide == 1.2.4
+  #python/Lib/site-packages/PySide/*
+  #python/Lib/site-packages/pysideuic/*
+
 cx_Freeze >= 5.0.2
   #python/Lib/site-packages/cx_Freeze/*
 

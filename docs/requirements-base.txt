@@ -1,7 +1,3 @@
-PySide == 1.2.4
-  #python/Lib/site-packages/PySide/*
-  #python/Lib/site-packages/pysideuic/*
-
 mistune >= 0.7.4
   #python/Lib/site-packages/mistune/*
   #python/Lib/site-packages/mistune.py
