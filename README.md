@@ -1,5 +1,6 @@
 # sqink
-[![GitHub release](https://img.shields.io/github/release/jfveronelli/sqink.svg)](https://github.com/jfveronelli/sqink/releases/latest)
+[![release](https://img.shields.io/github/release/jfveronelli/sqink.svg)](https://github.com/jfveronelli/sqink/releases/latest)
+[![status](https://travis-ci.org/jfveronelli/sqink.svg?branch=master)](https://travis-ci.org/jfveronelli/sqink)
 
 **Scroll, Quill & INK** is a multiplatform note taking application. Some of its features are:
 
