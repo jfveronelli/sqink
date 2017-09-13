@@ -1,0 +1,30 @@
+PySide == 1.2.4
+  #python/Lib/site-packages/PySide/*
+  #python/Lib/site-packages/pysideuic/*
+
+mistune >= 0.7.4
+  #python/Lib/site-packages/mistune/*
+  #python/Lib/site-packages/mistune.py
+
+Markdown >= 2.6.9
+  #python/Lib/site-packages/markdown/*
+
+dropbox >= 8.0.0
+  #python/Lib/site-packages/certifi/*
+  #python/Lib/site-packages/chardet/*
+  #python/Lib/site-packages/dropbox/*
+  #python/Lib/site-packages/idna/*
+  #python/Lib/site-packages/requests/*
+  #python/Lib/site-packages/urllib3/*
+  #python/Lib/site-packages/six.py
+
+google-api-python-client >= 1.6.2
+  #python/Lib/site-packages/apiclient/*
+  #python/Lib/site-packages/googleapiclient/*
+  #python/Lib/site-packages/httplib2/*
+  #python/Lib/site-packages/oauth2client/*
+  #python/Lib/site-packages/pyasn1/*
+  #python/Lib/site-packages/pyasn1_modules/*
+  #python/Lib/site-packages/rsa/*
+  #python/Lib/site-packages/uritemplate/*
+  #python/Lib/site-packages/six.py

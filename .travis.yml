@@ -4,7 +4,7 @@ python:
   - 3.4
 install:
   - pip install -U pip
-  - pip install -r docs/requirements.txt
+  - pip install -r docs/requirements-base.txt
 script:
   - cd test
   - python -m unittest runall
