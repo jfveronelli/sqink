@@ -1,12 +1,30 @@
 sudo: false
 language: python
-python:
-  - 3.4
+python: 3.4
+
 install:
   - pip install -U pip
   - pip install -r docs/requirements-base.txt
 script:
   - cd test
   - python -m coverage run --source ../src --omit */src/build.py runall.py
+  - cd ..
 after_success:
+  - cd test
   - bash <(curl -s https://codecov.io/bash)
+  - cd ..
+
+before_deploy:
+  - python build-linux.py
+  - cd dist/linux
+  - tar -czvf sqink-$(git describe --tags | cut -c 2-)-linux.tar.gz sqink
+  - cd ../..
+deploy:
+  provider: releases
+  api_key:
+    secure: EqPD0O9zGk/6K0fAp6bewQTDRTH1XFO5OeDVi6k1RTElpfGbuDxqXrDtn0yQvyCegmLheL4xt6S/ckVw15SkthlonfoevMBXfCY+WUdQ1EBFhbj+XsTZlTh/kTOi7BgYpb7+XfLiJ1jc68NFtDNIrBY7vwOmEi2cxIL6zc/0O6/wX8o40+E0ejU5qrpiIzY7t5hd4ojCg+hTOzu23unjinDDaDzDn+3nR093bdSsgy74TYQ8RJzop0PjhXnoPzIy7FyBjPu14hy+GJix2SnhjNFWBFNY0rknkIBV4ruN3/gvS+R3fSzYxiZJ8f6yfmwCf177Na85oRHy8Mw0dzAWZNtmMG21cn06HVByxiPpIYecl62QbQV063EORCv066zTNsKQj65z++FbMkS8P3JJ6pKkEMdqNmsokQzpWMljCFrzDyak/DzxQAX2/koKte9191Fx/xbB0ptQp8BxODFDB3U8u+iVgF1xjDRt58GowIH4YmN+0a5TtqdSTsVeMZQJLKjPsw6kWPWVjlpIK/jcs5Kd0NAH1GEviB7Kip0v+wAS12rV/IpN+8bRVN7JWOZERyPDnBuRZ4MVvGRp4bAxCXZERM21i5bBUlhhq0yEyvYc36R0wtJ+0NNAnxnHMXR5djOkjVkIfbL6VnqLf8W0sXggHKEd80OX0GX4u6adS1g=
+  file_glob: true
+  file: dist/linux/sqink-*-linux.tar.gz
+  skip_cleanup: true
+  on:
+    tags: true

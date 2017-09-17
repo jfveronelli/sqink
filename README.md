@@ -23,12 +23,10 @@
 
 ## Download
 
-Latest version is 1.2.0, released on 2017/09/01.
-
 
 ### Windows binary
 
-Download the latest version from [here](https://github.com/jfveronelli/sqink/releases/download/v1.2.0/sqink-1.2.0-win32.exe), execute the file to extract the application, and the run `sqink.exe` to start.
+Download `sqink-<version>-win32.exe` from [here](https://github.com/jfveronelli/sqink/releases/latest), execute the file to extract the application, and the run `sqink.exe` to start.
 
 The application may be run from a USB stick. No other requirements are needed.
 
@@ -41,7 +39,7 @@ The [PySide 1.2](http://qt-project.org/wiki/PySide) package must be already inst
 
     python -m pip install -U PySide
 
-Download the application from [here](https://github.com/jfveronelli/sqink/releases/download/v1.2.0/sqink-1.2.0-linux.tar.gz), unpack file, and run as:
+Download `sqink-<version>-linux.tar.gz` from [here](https://github.com/jfveronelli/sqink/releases/latest), unpack file, and run as:
 
     python sqink.py
 

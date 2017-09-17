@@ -14,7 +14,7 @@ if True:
 
 
 def dist(subpath=None):
-    return "dist/linux" + (subpath or "")
+    return "dist/linux/sqink" + (subpath or "")
 
 
 clean(dist())

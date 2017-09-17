@@ -17,7 +17,7 @@ if True:
 
 
 def dist(subpath=None):
-    return "dist/win32" + (subpath or "")
+    return "dist/win32/sqink" + (subpath or "")
 
 
 def build(ver, script, icon, target):
