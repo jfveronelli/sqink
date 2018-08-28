@@ -21,6 +21,7 @@ from httplib2 import SCHEME_TO_CONNECTION
 from io import BytesIO
 from oauth2client import GOOGLE_TOKEN_URI
 from oauth2client.client import AccessTokenRefreshError
+from oauth2client.client import FlowExchangeError
 from oauth2client.client import OAuth2Credentials
 from oauth2client.client import OAuth2WebServerFlow
 
@@ -47,7 +48,7 @@ def expires(f):
     def wrapper(*args, **kwargs):
         try:
             return f(*args, **kwargs)
-        except AccessTokenRefreshError:
+        except (AccessTokenRefreshError, FlowExchangeError):
             raise TokenExpiredError
     return wrapper
 
@@ -78,6 +79,7 @@ class HTTPSProxyConnectionWithTimeout(HTTPSConnectionWithTimeout):
             HTTPSConnectionWithTimeout.__init__(self, host, port=port, key_file=key_file, cert_file=cert_file,
                                                 timeout=timeout, proxy_info=proxy_info, *args, **kwargs)
 
+
 # override in httplib2 to support proxies and proxy basic authentication
 SCHEME_TO_CONNECTION["https"] = HTTPSProxyConnectionWithTimeout
 
@@ -97,6 +99,7 @@ class GoogleDriveAuthorizator:
         return self.__oauth.step1_get_authorize_url()
 
     @online
+    @expires
     def authorize(self, code):
         credentials = self.__oauth.step2_exchange(code, http=self.__http)
         token = credentials.refresh_token

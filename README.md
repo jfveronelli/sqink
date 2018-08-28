@@ -60,7 +60,6 @@ This application would not be possible without the following libraries and resou
 - Dropbox Core API for Python <https://www.dropbox.com/developers/core>
 - Google APIs Client Library for Python <https://developers.google.com/api-client-library/python/>
 - cx_Freeze <https://anthony-tuininga.github.io/cx_Freeze/>
-- mermaid <http://knsv.github.io/mermaid/>
 - Xiao Icons <http://delacro.deviantart.com/art/Xiao-Icon-84772282>
 
 

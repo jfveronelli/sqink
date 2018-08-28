@@ -586,7 +586,8 @@ class Window(QWidget):
         layout.addWidget(self.__statusBar)
 
         self.__lblNotesCount = QLabel()
-        self.__lblNotesCount.setStyleSheet("border-radius:0.5em; background-color:#b2dfdb; padding:0 0.5em;")
+        self.__lblNotesCount.setStyleSheet("border:1px solid #b2dfdb; border-radius:0.5em; background-color:#b2dfdb;" +\
+                                           " padding:0 0.5em;")
         self.__statusBar.addPermanentWidget(self.__lblNotesCount)
 
         self.__lblError = QLabel()
@@ -730,9 +731,11 @@ class Window(QWidget):
     def updateProxy(self):
         self.__viewerEditor.updateProxy()
 
-    def showStatus(self, message, seconds=5):
+    def showStatus(self, message, seconds=5, immediate=False):
         self.clearError()
         self.__statusBar.showMessage(message, timeout=seconds * 1000)
+        if immediate:
+            self.__statusBar.repaint()
 
     def showError(self, message):
         self.__statusBar.clearMessage()
@@ -857,7 +860,7 @@ class Window(QWidget):
 
     def __onSyncClicked(self):
         if self.remoteNoteProvider() and self.__viewerEditor.isAllowedToChange():
-            self.showStatus("Starting synchronization, please wait...")
+            self.showStatus("Starting synchronization, please wait...", immediate=True)
             try:
                 Synchronizer(self.noteProvider(), self.remoteNoteProvider()).sync()
                 self.reload(True)
@@ -1050,6 +1053,8 @@ class Preferences(QDialog):
                     return self.__criticalMessage("Google Drive Error", "Proxy settings are invalid.", self.__txtHost)
                 except AConnectionError:
                     return self.__criticalMessage("Google Drive Error", "Connection failed.", self.__chkGDrive)
+                except TokenExpiredError:
+                    return self.__criticalMessage("Google Drive Error", "Invalid token.", self.__chkGDrive)
 
         config.setProxyHost(proxyHost)
         config.setProxyPort(proxyPort)

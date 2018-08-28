@@ -35,7 +35,6 @@ clean(dist())
 
 copy("README.md", dist())
 copy(src("/resources/images"), dist("/resources/images"))
-copy(src("/resources/js"), dist("/resources/js"))
 copy(src("/resources/notes/DESCRIPTION.txt"), dist("/resources/notes"))
 copy(src("/resources/styles"), dist("/resources/styles"))
 

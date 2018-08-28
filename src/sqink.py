@@ -31,11 +31,11 @@ def getAppPath():
     modulePath = normpath(dirname(abspath(__file__)))
     libPath = normpath(modulePath + "/lib")
     if isdir(libPath):  # running from installed source
-        sys.path.append(libPath)
-        return modulePath
+        sys.path.insert(0, libPath)
     else:  # running from source code
-        sys.path.append(modulePath)
-        return modulePath
+        sys.path.insert(0, modulePath)
+        sys.path.insert(0, normpath(modulePath + "/../python/Lib/site-packages"))
+    return modulePath
 
 
 def main():

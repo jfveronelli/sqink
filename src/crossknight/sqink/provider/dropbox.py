@@ -235,6 +235,13 @@ class DropboxNoteProvider(RemoteNoteProvider):
         if self.__notesCache and (uuid not in self.__notesCache or self.__notesCache[uuid].removed):
             raise RuntimeError("Note[uuid=%s] does not exist" % uuid)
 
+        # Dropbox does not update the client_modifed date when the content hasn't changed. So the note is removed first.
+        _LOG.info("Trying to delete old note before updating: %s", uuid)
+        try:
+            self.__client.files_delete(self.__notePath(uuid))
+        except ApiError:
+            pass
+
         _LOG.info("Updating note: %s", uuid)
         self.__uploadFile(self.__notePath(uuid), note.lastModified, marshalNote(note))
 
